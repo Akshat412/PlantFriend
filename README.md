@@ -1,0 +1,2 @@
+# PlantFriend
+Friendly plant interface
