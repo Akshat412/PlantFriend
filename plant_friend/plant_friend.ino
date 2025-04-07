@@ -79,28 +79,21 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
 }
 
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  // Serial.begin(115200);
-
-  // Serial.println("Trying to turn on LED");
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
-
-  delay(10);
-  // connectAWS();
+  Serial.begin(115200);
+  connectAWS();
 }
 
 void loop() {
   h = 10;
   t = 11;
 
-  // Serial.print(F("Humidity: "));
-  // Serial.print(h);
-  // Serial.print(F("%  Temperature: "));
-  // Serial.print(t);
-  // Serial.println(F("°C "));
+  Serial.print(F("Humidity: "));
+  Serial.print(h);
+  Serial.print(F("%  Temperature: "));
+  Serial.print(t);
+  Serial.println(F("°C "));
 
-  // publishMessage();
-  // client.loop();
+  publishMessage();
+  client.loop();
   delay(1000);
 }
