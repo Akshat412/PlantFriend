@@ -75,9 +75,9 @@ void enableSoilSensor() {
 }
 
 void enableLightSensor() {
-  Serial.println("Enabling soil sensor");
+  Serial.println("Enabling light sensor");
   lightMeter.begin();
-  Serial.println("Enabled soil sensor");
+  Serial.println("Enabled light sensor");
 }
 
 void connectAWS() {
@@ -85,6 +85,9 @@ void connectAWS() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   Serial.println("Connecting to Wi-Fi");
+
+  int tries_max = 64;
+  int tries = 0;
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -121,9 +124,18 @@ void connectAWS() {
 
 void publishMessage() {
   StaticJsonDocument<200> doc;
-  doc["soil_moisture"] = h;
-  doc["temperature"] = t;
-  doc["light"] = l;
+
+  JsonArray tempArray = doc.createNestedArray("temperature");
+  JsonArray soilArray = doc.createNestedArray("soil_moisture");
+  JsonArray lightArray = doc.createNestedArray("light");
+
+  // Add float arrays to JsonArrays 
+  for(int i = 0; i < 5; i++){
+    tempArray.add(t[i]);
+    soilArray.add(h[i]);
+    lightArray.add(l[i]);
+  }
+
   char jsonBuffer[512];
   serializeJson(doc, jsonBuffer); // print to client
 
@@ -154,14 +166,14 @@ void setup() {
 }
 
 void loop() {
-  for (int i=0; i < 5; i++) {
+  for (int i = 0; i < 5; i++) {
     // Sample sensors
     t[i] = ss.getTemp();
     h[i] = ss.touchRead(0);
     l[i] = lightMeter.readLightLevel();
 
     // Scale from 0-100%
-    h[i] = map(h, 0, 1023, 0, 100);
+    h[i] = map(h[i], 0, 1023, 0, 100);
 
     // Serial monitor writes
     Serial.print(F("Soil Moisture: "));
@@ -171,11 +183,12 @@ void loop() {
     Serial.print("°C, Light: ");
     Serial.print(l[i]);
     Serial.println(" lux");
-
-    // Write to cloud
-    publishMessage();
-    client.loop();
   }
+
+  // Write to cloud
+  publishMessage();
+  client.loop();
+
   // Sleep for TIME_TO_SLEEP seconds
   goToSleep();
 }
