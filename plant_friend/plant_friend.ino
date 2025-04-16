@@ -17,9 +17,9 @@
 #define TIME_TO_SLEEP  10          // Time ESP32 will go to sleep (in seconds)
 
 // Globals for temperature, soil moisture and light
-float t;  // Temperature in °C
-float h;  // Soil moisture as a percentage
-float l;  // Light in lux
+float t[5];  // Temperature in °C
+float h[5];  // Soil moisture as a percentage
+float l[5];  // Light in lux
 
 WiFiClientSecure net = WiFiClientSecure();
 PubSubClient client(net);
@@ -154,27 +154,28 @@ void setup() {
 }
 
 void loop() {
-  // Sample sensors
-  t = ss.getTemp();
-  h = ss.touchRead(0);
-  l = lightMeter.readLightLevel();
+  for (int i=0; i < 5; i++) {
+    // Sample sensors
+    t[i] = ss.getTemp();
+    h[i] = ss.touchRead(0);
+    l[i] = lightMeter.readLightLevel();
 
-  // Scale from 0-100%
-  h = map(h, 0, 1023, 0, 100);
+    // Scale from 0-100%
+    h[i] = map(h, 0, 1023, 0, 100);
 
-  // Serial monitor writes
-  Serial.print(F("Soil Moisture: "));
-  Serial.print(h);
-  Serial.print(F("%, Temperature: "));
-  Serial.print(t);
-  Serial.print("°C, Light: ");
-  Serial.print(l);
-  Serial.println(" lux");
+    // Serial monitor writes
+    Serial.print(F("Soil Moisture: "));
+    Serial.print(h[i]);
+    Serial.print(F("%, Temperature: "));
+    Serial.print(t[i]);
+    Serial.print("°C, Light: ");
+    Serial.print(l[i]);
+    Serial.println(" lux");
 
-  // Write to cloud
-  publishMessage();
-  client.loop();
-
+    // Write to cloud
+    publishMessage();
+    client.loop();
+  }
   // Sleep for TIME_TO_SLEEP seconds
   goToSleep();
 }
