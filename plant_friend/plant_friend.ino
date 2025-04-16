@@ -175,6 +175,6 @@ void loop() {
   publishMessage();
   client.loop();
 
-  // Delay in superloop
-  delay(1000);
+  // Sleep for TIME_TO_SLEEP seconds
+  goToSleep();
 }
