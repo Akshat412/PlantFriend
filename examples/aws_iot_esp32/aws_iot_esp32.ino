@@ -16,7 +16,7 @@ PubSubClient client(net);
 void connectAWS()
 {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(WIFI_SSID);
 
   Serial.println("Connecting to Wi-Fi");
 

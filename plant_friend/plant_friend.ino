@@ -66,8 +66,10 @@ void enableSoilSensor() {
   Serial.println("Enabling soil sensor");
   
   if (!ss.begin(0x36)) {
-    Serial.println("ERROR! Sensor not found");
-    while(1) delay(1);
+    while(1) {
+      Serial.println("ERROR! Sensor not found");
+      delay(1000);
+    }
   } else {
     Serial.print("Soil sensor started! Firmware Version: ");
     Serial.println(ss.getVersion(), HEX);
@@ -82,7 +84,7 @@ void enableLightSensor() {
 
 void connectAWS() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(WIFI_SSID);
 
   Serial.println("Connecting to Wi-Fi");
 
