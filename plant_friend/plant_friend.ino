@@ -277,24 +277,25 @@ void messageHandler(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  String message = doc["message"].as<String>(); // extract as String
+  // String message = doc["status_code"].as<String>(); // extract as String
+  int message = doc["status_code"].as<int>(); // ✅ good, matches JSON structure
 
   Serial.print("Message received from AWS: ");
   Serial.println(message);
 
   // Shortcut 
   u8g2.clearBuffer();
-  if (message == "happy") {
+  if (message == 1) { // happy
     Serial.println("The message is HAPPY, calling draw function now");
     u8g2_happy(0);
-  } else if (message == "sad") {
+  } else if (message == 2) { // sad
     Serial.println("The message is SAD, calling draw function now");
     u8g2_sad(0);
-  } else if (message == "sade") {
-    Serial.println("The message is SADE, calling draw function now");
-    u8g2_sad(0);
+  // } else if (message == "sade") {
+  //   Serial.println("The message is SADE, calling draw function now");
+  //   u8g2_sad(0);
   } else {
-    Serial.println("else case ded");
+    Serial.println("nothing!");
   }
 
   // Write all values to screen
