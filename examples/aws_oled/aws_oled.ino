@@ -22,8 +22,8 @@
 #include <BH1750.h>
 
 // Topics for AWS IoT
-#define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
-#define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub"
+#define AWS_IOT_PUBLISH_TOPIC   "esp32/pub" // we publish to this 
+#define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub" // we subscribe to this 
 
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for micro seconds to seconds
 #define TIME_TO_SLEEP  10          // Time ESP32 will go to sleep (in seconds)
@@ -52,51 +52,27 @@ void u8g2_prepare(void) {
   u8g2.setFontDirection(0);
 }
 
-// void u8g2_happy(uint8_t a) {
-//   u8g2.drawStr( 10, 10, "happy");
-
-//   // Face outline
-//   u8g2.drawCircle(64, 40, 20, U8G2_DRAW_ALL);
-
-//   // Eyes
-//   u8g2.drawDisc(56, 35, 2, U8G2_DRAW_ALL);  // Left eye
-//   u8g2.drawDisc(72, 35, 2, U8G2_DRAW_ALL);  // Right eye
-
-//   // Smile using an arc (top half of a circle)
-//   for (int angle = 30; angle <= 150; angle += 10) {
-//     float rad1 = angle * 3.14159 / 180.0;
-//     float rad2 = (angle + 10) * 3.14159 / 180.0;
-//     int x1 = 64 + cos(rad1) * 10;
-//     int y1 = 47 + sin(rad1) * 10;  // moved down slightly for placement
-//     int x2 = 64 + cos(rad2) * 10;
-//     int y2 = 47 + sin(rad2) * 10;
-//     u8g2.drawLine(x1, y1, x2, y2);
-//   }
-
-//   u8g2.sendBuffer();
-// }
 
 void u8g2_happy(uint8_t a) {
   u8g2.clearBuffer();
 
   // Face (plant head)
-  u8g2.drawCircle(64, 35, 20, U8G2_DRAW_ALL);
+  u8g2.drawCircle(64, 25, 20, U8G2_DRAW_ALL);
 
   // Happy eyes
-  u8g2.drawDisc(60, 28, 1, U8G2_DRAW_ALL);  // Left eye
-  u8g2.drawDisc(68, 28, 1, U8G2_DRAW_ALL);  // Right eye
+  u8g2.drawDisc(60, 18, 1, U8G2_DRAW_ALL);  // Left eye
+  u8g2.drawDisc(68, 18, 1, U8G2_DRAW_ALL);  // Right eye
 
   // Smiling mouth (arc from 20° to 160°)
   for (int angle = 20; angle <= 160; angle += 10) {
     float rad1 = angle * 3.14159 / 180.0;
     float rad2 = (angle + 10) * 3.14159 / 180.0;
     int x1 = 64 + cos(rad1) * 6;
-    int y1 = 38 + sin(rad1) * 6;
+    int y1 = 28 + sin(rad1) * 6;  // was 38, now 28
     int x2 = 64 + cos(rad2) * 6;
-    int y2 = 38 + sin(rad2) * 6;
+    int y2 = 28 + sin(rad2) * 6;  // was 38, now 28
     u8g2.drawLine(x1, y1, x2, y2);
   }
-
   // Stem
   u8g2.drawLine(64, 47, 64, 60);
 
@@ -112,64 +88,26 @@ void u8g2_happy(uint8_t a) {
 }
 
 void u8g2_sad(uint8_t a) {
-  // Draw pot (simple rounded pot)
-  u8g2.drawBox(48, 40, 40, 20);           // Pot base
-  u8g2.drawFrame(44, 36, 48, 6);          // Pot rim
-  
-  u8g2.setDrawColor(0);  // Set color to black
-  // Smile
-  for (int angle = 30; angle <= 150; angle += 10) {
-    float rad1 = angle * 3.14159 / 180.0;
-    float rad2 = (angle + 10) * 3.14159 / 180.0;
-    int x1 = 64 + cos(rad1) * 10;
-    int y1 = 57 + sin(rad1) * 10;  // moved down slightly for placement
-    int x2 = 64 + cos(rad2) * 10;
-    int y2 = 57 + sin(rad2) * 10;
-    u8g2.drawLine(x1, y1, x2, y2);
-  }
-
-  // Eyes
-  u8g2.drawDisc(58, 51, 1, U8G2_DRAW_ALL);  // Left eye
-  u8g2.drawDisc(70, 51, 1, U8G2_DRAW_ALL);  // Right eye
-
-  u8g2.setDrawColor(1);  // Set color to black
-
-  // Center Leaf (vertical)
-  u8g2.drawEllipse(64, 20, 18, 10);  // Vertical oval (fat center leaf)
-  u8g2.drawLine(64, 10, 64, 30);     // Leaf center vein (line)
-
-  // Left Leaf (angled, with midline)
-  u8g2.drawEllipse(52, 26, 18, 10);  // Left oval leaf
-  u8g2.drawLine(52, 16, 52, 36);     // Leaf center vein (line)
-
-  // Right Leaf (angled, with midline)
-  u8g2.drawEllipse(76, 26, 18, 10);  // Right oval leaf
-  u8g2.drawLine(76, 16, 76, 36);     // Leaf center vein (line)
-
-  u8g2.sendBuffer();
-}
-
-
-void u8g2_sade(uint8_t a) {
-
   u8g2.clearBuffer();
 
   // Face (plant head)
-  u8g2.drawCircle(64, 35, 20, U8G2_DRAW_ALL);
+  u8g2.drawCircle(64, 25, 20, U8G2_DRAW_ALL);
 
   // Happy eyes
-  u8g2.drawDisc(60, 28, 1, U8G2_DRAW_ALL);  // Left eye
-  u8g2.drawDisc(68, 28, 1, U8G2_DRAW_ALL);  // Right eye
-  // Smiling mouth (arc from 200° to 340°)
-  for (int angle = 200; angle <= 340; angle += 10) {
+  u8g2.drawDisc(60, 18, 1, U8G2_DRAW_ALL);  // Left eye
+  u8g2.drawDisc(68, 18, 1, U8G2_DRAW_ALL);  // Right eye
+
+  // Frowning mouth (arc from 20° to 160°)
+  for (int angle = 20; angle <= 160; angle += 10) {
     float rad1 = angle * 3.14159 / 180.0;
     float rad2 = (angle + 10) * 3.14159 / 180.0;
     int x1 = 64 + cos(rad1) * 6;
-    int y1 = 38 + sin(rad1) * 6;
+    int y1 = 32 - sin(rad1) * 6;  // moved mouth center from 28 to 32
     int x2 = 64 + cos(rad2) * 6;
-    int y2 = 38 + sin(rad2) * 6;
+    int y2 = 32 - sin(rad2) * 6;  // moved mouth center from 28 to 32
     u8g2.drawLine(x1, y1, x2, y2);
   }
+
 
   // Stem
   u8g2.drawLine(64, 47, 64, 60);
@@ -184,44 +122,10 @@ void u8g2_sade(uint8_t a) {
 
   u8g2.sendBuffer();
 
-  // u8g2.clearBuffer();
-  // u8g2.setFont(u8g2_font_6x10_tr);
-  // u8g2.drawStr(0, 0, "low on water!");
 
-  // // Draw shriveled pot
-  // u8g2.drawFrame(54, 50, 20, 10);     // Pot base
-  // u8g2.drawLine(54, 50, 50, 45);      // Left slant
-  // u8g2.drawLine(74, 50, 78, 45);      // Right slant
-  // u8g2.drawLine(50, 45, 78, 45);      // Pot top
-
-  // // Drooping stem
-  // u8g2.drawLine(64, 45, 62, 30);      // Slight lean to the left
-  // u8g2.drawLine(62, 30, 60, 25);      // Drooping tip
-
-  // // Limp leaf
-  // u8g2.drawLine(62, 35, 58, 33);      // Small left droop leaf
-  // u8g2.drawLine(58, 33, 56, 31);
-
-  // // Bigger X-eyes (Left)
-  // u8g2.drawLine(54, 18, 60, 24);
-  // u8g2.drawLine(60, 18, 54, 24);
-
-  // // Bigger X-eyes (Right)
-  // u8g2.drawLine(66, 18, 72, 24);
-  // u8g2.drawLine(72, 18, 66, 24);
-
-  // // Dry, cracked mouth
-  // u8g2.drawLine(60, 26, 68, 26);
-  // u8g2.drawPixel(62, 25);
-  // u8g2.drawPixel(66, 27);
-
-  // // Little “cracked soil” lines
-  // u8g2.drawLine(52, 60, 54, 58);
-  // u8g2.drawLine(74, 60, 76, 58);
-  // u8g2.drawPixel(64, 60);
-
-  // u8g2.sendBuffer();
 }
+
+
 
 void u8g2_wet(uint8_t a) {
   u8g2.clearBuffer();
@@ -506,29 +410,6 @@ void draw(void) {
 }
 
 
-// void setup(void) {
-//   u8g2.begin();
-// }
-
-// void loop(void) {
-//   // picture loop  
-//   u8g2.clearBuffer();
-//   draw();
-//   u8g2.sendBuffer();
-  
-//   // increase the state
-//   draw_state++;
-//   if ( draw_state >= 12*8 )
-//     draw_state = 0;
-
-//   // delay between each page
-//   delay(100);
-
-// }
-
-//NOTE: second code i tried - no wifi, no aws, just diplay and blink w debugging statements
-
-
 void setup() {
   Serial.begin(115200);
   
@@ -537,74 +418,11 @@ void setup() {
 }
 
 void loop() {
-  // // picture loop  
-  // maybe uncomment this later TODO sanj
-  // u8g2.clearBuffer();
-  // draw();
-  // u8g2.sendBuffer();
-  
-  
-  // increase the state
-  // do not change the state 
-  // draw_state++;
-  // if ( draw_state >= 12*8 )
-  //   draw_state = 0;
-
-  // delay between each page
-  // delay(100);
   client.loop();  // ← THIS is needed to trigger the callback
 
   delay(5000);
 }
 
-
-
-// // Method to print the reason by which ESP32 has been awaken from sleep
-// void print_wakeup_reason(){
-//   esp_sleep_wakeup_cause_t wakeup_reason;
-
-//   wakeup_reason = esp_sleep_get_wakeup_cause();
-
-//   switch(wakeup_reason)
-//   {
-//     case ESP_SLEEP_WAKEUP_EXT0 : Serial.println("Wakeup caused by external signal using RTC_IO"); break;
-//     case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
-//     case ESP_SLEEP_WAKEUP_TIMER : Serial.println("Wakeup caused by timer"); break;
-//     case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
-//     case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
-//     default : Serial.printf("Wakeup was not caused by deep sleep: %d\n",wakeup_reason); break;
-//   }
-// }
-
-// // void goToSleep() {
-// //   // Configure the wake up source: set our ESP32 to wake up TIME_TO_SLEEP seconds
-// //   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-
-// //   Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) +
-// //   " Seconds");
-// //   // delay(100);
-
-// //   Serial.flush(); 
-// //   // esp_deep_sleep_start(); // comment back later 
-// // }
-
-// void enableSoilSensor() {
-//   Serial.println("Enabling soil sensor");
-  
-//   if (!ss.begin(0x36)) {
-//     Serial.println("ERROR! Sensor not found");
-//     while(1) delay(1);
-//   } else {
-//     Serial.print("Soil sensor started! Firmware Version: ");
-//     Serial.println(ss.getVersion(), HEX);
-//   }
-// }
-
-// void enableLightSensor() {
-//   Serial.println("Enabling light sensor");
-//   lightMeter.begin();
-//   Serial.println("Enabled light sensor");
-// }
 void connectAWS() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID);
@@ -661,11 +479,6 @@ void publishMessage() {
     lightArray.add(l[i]);
   }
 
-  // char jsonBuffer[512];
-  // serializeJson(doc, jsonBuffer); // print to client
-
-  // client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
-
   doc["status"] = "test";
   doc["message"] = "Hello from Plant Friend!";
   doc["timestamp"] = millis(); // just to include something dynamic
@@ -710,24 +523,14 @@ too cold
   } else if (message == "sad") {
     Serial.println("the message is SAD and calling draw function now");
     u8g2_sad(0);
+  } else if (message == "sade") {
+    Serial.println("the message is SAD and calling draw function now");
+    u8g2_sad(0);
   } else {
     Serial.println("else case ded");
 
   }
-  // } else if (message == "wet") {
-  //   Serial.println("the message is WET and calling draw function now");
-  //   u8g2_wet(0);
-  // } else if (message == "sunny") {
-  //   Serial.println("the message is SUNNY and calling draw function now");
-  //   u8g2_light_high(0);
-  // } else if (message == "tough") {
-  //   Serial.println("the message is TOUGH and calling draw function now");
-  //   drawToughPlantFace(0);
-  // } else {
-  //   Serial.println("the message is unknown and calling draw function now");
-  //   u8g2.drawStr(0, 30, "Unknown msg");
-  // }
-  
+
   u8g2.sendBuffer();
 }
 
