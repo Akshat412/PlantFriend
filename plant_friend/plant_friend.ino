@@ -1,3 +1,17 @@
+// Library for display integration
+#include <Arduino.h>
+#include <U8g2lib.h>
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
+
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9341.h>
+
 // Libraries for AWS IoT communication
 #include "secrets.h"
 #include <WiFiClientSecure.h>
@@ -32,6 +46,114 @@ Adafruit_seesaw ss;
 // The light sensor also needs a pre-initialized I2C bus, which
 // the soil moisture sensor's initialization might do
 BH1750 lightMeter;
+
+/* --- DISPLAY CODE --- */
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+#define cross_width 24
+#define cross_height 24
+static const unsigned char cross_bits[] U8X8_PROGMEM  = {
+  0x00, 0x18, 0x00, 0x00, 0x24, 0x00, 0x00, 0x24, 0x00, 0x00, 0x42, 0x00, 
+  0x00, 0x42, 0x00, 0x00, 0x42, 0x00, 0x00, 0x81, 0x00, 0x00, 0x81, 0x00, 
+  0xC0, 0x00, 0x03, 0x38, 0x3C, 0x1C, 0x06, 0x42, 0x60, 0x01, 0x42, 0x80, 
+  0x01, 0x42, 0x80, 0x06, 0x42, 0x60, 0x38, 0x3C, 0x1C, 0xC0, 0x00, 0x03, 
+  0x00, 0x81, 0x00, 0x00, 0x81, 0x00, 0x00, 0x42, 0x00, 0x00, 0x42, 0x00, 
+  0x00, 0x42, 0x00, 0x00, 0x24, 0x00, 0x00, 0x24, 0x00, 0x00, 0x18, 0x00, };
+
+#define cross_fill_width 24
+#define cross_fill_height 24
+static const unsigned char cross_fill_bits[] U8X8_PROGMEM  = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x00, 0x18, 0x64, 0x00, 0x26, 
+  0x84, 0x00, 0x21, 0x08, 0x81, 0x10, 0x08, 0x42, 0x10, 0x10, 0x3C, 0x08, 
+  0x20, 0x00, 0x04, 0x40, 0x00, 0x02, 0x80, 0x00, 0x01, 0x80, 0x18, 0x01, 
+  0x80, 0x18, 0x01, 0x80, 0x00, 0x01, 0x40, 0x00, 0x02, 0x20, 0x00, 0x04, 
+  0x10, 0x3C, 0x08, 0x08, 0x42, 0x10, 0x08, 0x81, 0x10, 0x84, 0x00, 0x21, 
+  0x64, 0x00, 0x26, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+
+#define cross_block_width 14
+#define cross_block_height 14
+static const unsigned char cross_block_bits[] U8X8_PROGMEM  = {
+  0xFF, 0x3F, 0x01, 0x20, 0x01, 0x20, 0x01, 0x20, 0x01, 0x20, 0x01, 0x20, 
+  0xC1, 0x20, 0xC1, 0x20, 0x01, 0x20, 0x01, 0x20, 0x01, 0x20, 0x01, 0x20, 
+  0x01, 0x20, 0xFF, 0x3F, };
+
+void u8g2_prepare(void) {
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.setFontRefHeightExtendedText();
+  u8g2.setDrawColor(1);
+  u8g2.setFontPosTop();
+  u8g2.setFontDirection(0);
+}
+
+void u8g2_happy(uint8_t a) {
+  u8g2.clearBuffer();
+
+  // Face (plant head)
+  u8g2.drawCircle(64, 25, 20, U8G2_DRAW_ALL);
+
+  // Happy eyes
+  u8g2.drawDisc(60, 18, 1, U8G2_DRAW_ALL);  // Left eye
+  u8g2.drawDisc(68, 18, 1, U8G2_DRAW_ALL);  // Right eye
+
+  // Smiling mouth (arc from 20° to 160°)
+  for (int angle = 20; angle <= 160; angle += 10) {
+    float rad1 = angle * 3.14159 / 180.0;
+    float rad2 = (angle + 10) * 3.14159 / 180.0;
+    int x1 = 64 + cos(rad1) * 6;
+    int y1 = 28 + sin(rad1) * 6;  // was 38, now 28
+    int x2 = 64 + cos(rad2) * 6;
+    int y2 = 28 + sin(rad2) * 6;  // was 38, now 28
+    u8g2.drawLine(x1, y1, x2, y2);
+  }
+  // Stem
+  u8g2.drawLine(64, 47, 64, 60);
+
+  // Leaves
+  u8g2.drawEllipse(58, 52, 4, 2, U8G2_DRAW_ALL); // Left leaf
+  u8g2.drawEllipse(70, 52, 4, 2, U8G2_DRAW_ALL); // Right leaf
+
+  // Pot
+  u8g2.drawBox(56, 60, 16, 6);               // Base
+  u8g2.drawFrame(54, 60, 20, 4);             // Top lip
+
+  u8g2.sendBuffer();
+}
+
+void u8g2_sad(uint8_t a) {
+  u8g2.clearBuffer();
+
+  // Face (plant head)
+  u8g2.drawCircle(64, 25, 20, U8G2_DRAW_ALL);
+
+  // Happy eyes
+  u8g2.drawDisc(60, 18, 1, U8G2_DRAW_ALL);  // Left eye
+  u8g2.drawDisc(68, 18, 1, U8G2_DRAW_ALL);  // Right eye
+
+  // Frowning mouth (arc from 20° to 160°)
+  for (int angle = 20; angle <= 160; angle += 10) {
+    float rad1 = angle * 3.14159 / 180.0;
+    float rad2 = (angle + 10) * 3.14159 / 180.0;
+    int x1 = 64 + cos(rad1) * 6;
+    int y1 = 32 - sin(rad1) * 6;  // moved mouth center from 28 to 32
+    int x2 = 64 + cos(rad2) * 6;
+    int y2 = 32 - sin(rad2) * 6;  // moved mouth center from 28 to 32
+    u8g2.drawLine(x1, y1, x2, y2);
+  }
+
+
+  // Stem
+  u8g2.drawLine(64, 47, 64, 60);
+
+  // Leaves
+  u8g2.drawEllipse(58, 52, 4, 2, U8G2_DRAW_ALL); // Left leaf
+  u8g2.drawEllipse(70, 52, 4, 2, U8G2_DRAW_ALL); // Right leaf
+
+  // Pot
+  u8g2.drawBox(56, 60, 16, 6);               // Base
+  u8g2.drawFrame(54, 60, 20, 4);             // Top lip
+
+  u8g2.sendBuffer();
+}
 
 // Method to print the reason by which ESP32 has been awaken from sleep
 void print_wakeup_reason(){
@@ -145,21 +267,49 @@ void publishMessage() {
 }
 
 void messageHandler(char* topic, byte* payload, unsigned int length) {
-  Serial.print("incoming: ");
-  Serial.println(topic);
-
+  Serial.println("In message handler");
   StaticJsonDocument<200> doc;
-  deserializeJson(doc, payload);
-  const char* message = doc["message"];
+  DeserializationError error = deserializeJson(doc, payload, length);
+
+  if (error) {
+    Serial.print("Deserialization failed: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  String message = doc["message"].as<String>(); // extract as String
+
+  Serial.print("Message received from AWS: ");
   Serial.println(message);
+
+  // Shortcut 
+  u8g2.clearBuffer();
+  if (message == "happy") {
+    Serial.println("The message is HAPPY, calling draw function now");
+    u8g2_happy(0);
+  } else if (message == "sad") {
+    Serial.println("The message is SAD, calling draw function now");
+    u8g2_sad(0);
+  } else if (message == "sade") {
+    Serial.println("The message is SADE, calling draw function now");
+    u8g2_sad(0);
+  } else {
+    Serial.println("else case ded");
+  }
+
+  // Write all values to screen
+  u8g2.sendBuffer();
 }
 
 void setup() {
   // Initialize serial
   Serial.begin(115200);
 
+  // Initialize screen
+  u8g2.begin();
+
   // Print wakeup reason (DEBUGGING)
-  print_wakeup_reason();
+  // print_wakeup_reason();
 
   // Enable all sensors and AWS IoT core
   enableSoilSensor();
@@ -186,11 +336,17 @@ void loop() {
     Serial.print(l[i]);
     Serial.println(" lux");
   }
+  Serial.println();
 
   // Write to cloud
   publishMessage();
-  client.loop();
+
+  int start_time = millis();
+
+  while (millis() - start_time < 2000) client.loop();
 
   // Sleep for TIME_TO_SLEEP seconds
-  goToSleep();
+  // goToSleep();
+  Serial.println("PlantFriend going to sleep");
+  delay(10000);
 }
