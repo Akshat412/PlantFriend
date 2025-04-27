@@ -278,7 +278,7 @@ void messageHandler(char* topic, byte* payload, unsigned int length) {
   }
 
   // String message = doc["status_code"].as<String>(); // extract as String
-  int message = doc["status_code"].as<int>(); // ✅ good, matches JSON structure
+  int message = doc["status_code"].as<int>(); // matches JSON structure
 
   Serial.print("Message received from AWS: ");
   Serial.println(message);
