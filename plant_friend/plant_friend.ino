@@ -30,6 +30,9 @@
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for micro seconds to seconds
 #define TIME_TO_SLEEP  10          // Time ESP32 will go to sleep (in seconds)
 
+const int wakeupPin = 7;  // GPIO 7 for external wake-up
+esp_sleep_wakeup_cause_t wakeup_reason;
+
 // Globals for temperature, soil moisture and light
 float t[5];  // Temperature in °C
 float h[5];  // Soil moisture as a percentage
@@ -129,8 +132,6 @@ void u8g2_sad(uint8_t a) {
 
 // Method to print the reason by which ESP32 has been awaken from sleep
 void print_wakeup_reason(){
-  esp_sleep_wakeup_cause_t wakeup_reason;
-
   wakeup_reason = esp_sleep_get_wakeup_cause();
 
   switch(wakeup_reason)
@@ -275,14 +276,18 @@ void messageHandler(char* topic, byte* payload, unsigned int length) {
 }
 
 void setup() {
+  pinMode(wakeupPin, INPUT_PULLDOWN);  // Declaring the pin
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeupPin, HIGH);  // Configure external wake-up
+
   // Initialize serial
   Serial.begin(115200);
+  delay(100);
 
   // Initialize screen
   u8g2.begin();
 
   // Print wakeup reason (DEBUGGING)
-  // print_wakeup_reason();
+  print_wakeup_reason();
 
   // Enable all sensors and AWS IoT core
   enableSoilSensor();
@@ -314,12 +319,28 @@ void loop() {
   // Write to cloud
   publishMessage();
 
-  int start_time = millis();
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
+    // Wakeup by button: turn on face
+    Serial.println("Wakeup caused by external signal using RTC_IO");
+    int start_time = millis();
+    while (millis() - start_time < 2000) client.loop();
 
-  while (millis() - start_time < 2000) client.loop();
+    // Delay on face for 10s
+    delay(10000);
+
+    // Clear screen
+    u8g2.clearBuffer();
+    u8g2.sendBuffer();
+  }
+
+  else {
+    // Clear screen
+    u8g2.clearBuffer();
+    u8g2.sendBuffer();
+  }
 
   // Sleep for TIME_TO_SLEEP seconds
-  // goToSleep();
   Serial.println("PlantFriend going to sleep");
-  delay(10000);
+  delay(100);
+  goToSleep();
 }
