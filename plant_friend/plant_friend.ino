@@ -88,12 +88,9 @@ void u8g2_prepare(void) {
 void u8g2_happy(uint8_t a) {
   u8g2.clearBuffer();
 
-  // Face (plant head)
-  u8g2.drawCircle(64, 25, 20, U8G2_DRAW_ALL);
-
   // Happy eyes
-  u8g2.drawDisc(60, 18, 1, U8G2_DRAW_ALL);  // Left eye
-  u8g2.drawDisc(68, 18, 1, U8G2_DRAW_ALL);  // Right eye
+  u8g2.drawDisc(40, 24, 8, U8G2_DRAW_ALL);  // Left eye
+  u8g2.drawDisc(88, 24, 8, U8G2_DRAW_ALL);  // Right eye
 
   // Smiling mouth (arc from 20° to 160°)
   for (int angle = 20; angle <= 160; angle += 10) {
@@ -105,16 +102,6 @@ void u8g2_happy(uint8_t a) {
     int y2 = 28 + sin(rad2) * 6;  // was 38, now 28
     u8g2.drawLine(x1, y1, x2, y2);
   }
-  // Stem
-  u8g2.drawLine(64, 47, 64, 60);
-
-  // Leaves
-  u8g2.drawEllipse(58, 52, 4, 2, U8G2_DRAW_ALL); // Left leaf
-  u8g2.drawEllipse(70, 52, 4, 2, U8G2_DRAW_ALL); // Right leaf
-
-  // Pot
-  u8g2.drawBox(56, 60, 16, 6);               // Base
-  u8g2.drawFrame(54, 60, 20, 4);             // Top lip
 
   u8g2.sendBuffer();
 }
@@ -122,12 +109,9 @@ void u8g2_happy(uint8_t a) {
 void u8g2_sad(uint8_t a) {
   u8g2.clearBuffer();
 
-  // Face (plant head)
-  u8g2.drawCircle(64, 25, 20, U8G2_DRAW_ALL);
-
-  // Happy eyes
-  u8g2.drawDisc(60, 18, 1, U8G2_DRAW_ALL);  // Left eye
-  u8g2.drawDisc(68, 18, 1, U8G2_DRAW_ALL);  // Right eye
+  // Sad eyes
+  u8g2.drawDisc(40, 24, 8, U8G2_DRAW_ALL);  // Left eye
+  u8g2.drawDisc(88, 24, 8, U8G2_DRAW_ALL);  // Right eye
 
   // Frowning mouth (arc from 20° to 160°)
   for (int angle = 20; angle <= 160; angle += 10) {
@@ -139,18 +123,6 @@ void u8g2_sad(uint8_t a) {
     int y2 = 32 - sin(rad2) * 6;  // moved mouth center from 28 to 32
     u8g2.drawLine(x1, y1, x2, y2);
   }
-
-
-  // Stem
-  u8g2.drawLine(64, 47, 64, 60);
-
-  // Leaves
-  u8g2.drawEllipse(58, 52, 4, 2, U8G2_DRAW_ALL); // Left leaf
-  u8g2.drawEllipse(70, 52, 4, 2, U8G2_DRAW_ALL); // Right leaf
-
-  // Pot
-  u8g2.drawBox(56, 60, 16, 6);               // Base
-  u8g2.drawFrame(54, 60, 20, 4);             // Top lip
 
   u8g2.sendBuffer();
 }
